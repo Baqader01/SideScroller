@@ -1,45 +1,34 @@
 extends CharacterBody2D
 
-const GRAVITY = 500
-const SPEED = 200
-const JUMP_VELOCITY = -400
+const SPEED = 300.0
+const JUMP_VELOCITY = -400.0
 
-# Called when the node enters the scene tree for the first time.
-func _ready() -> void:
-	pass # Replace with function body.
-
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	pass
+@onready var sprite:AnimatedSprite2D = $AnimatedSprite2D
 
 func _physics_process(delta: float) -> void:
-	# Applying gravity
+	# Add the gravity.
 	if not is_on_floor():
-		#fall
-		velocity.y += GRAVITY * delta
+		velocity += get_gravity() * delta
 	else:
-		#reset velocity on the floo
 		velocity.y = 0
-	
-	#jumping
-	if Input.is_action_just_pressed("ui_accept"):
+
+	# Handle jump.
+	if Input.is_action_just_pressed("ui_accept") and is_on_floor():
 		velocity.y = JUMP_VELOCITY
 	
-	# horizontal movement
-	if Input.is_action_just_pressed("ui_right"):
-		velocity.x += SPEED
-	
-	if Input.is_action_just_released("ui_right"):
-		velocity.x = 0
-	
-	if Input.is_action_just_pressed("ui_left"):
-		velocity.x -= SPEED
-	
-	if Input.is_action_just_released("ui_left"):
-		velocity.x = 0
-	
-	
+	#run animation
+	if velocity.x != 0:
+		sprite.play("run")
+	else:
+		sprite.play("idle")
+
+	# Get the input direction and handle the movement/deceleration.
+	var direction := Input.get_axis("ui_left", "ui_right")
+	if direction:
+		velocity.x = direction * SPEED
+		sprite.flip_h = direction < 0
+		
+	else:
+		velocity.x = move_toward(velocity.x, 0, SPEED)
+
 	move_and_slide()
-	
-	
